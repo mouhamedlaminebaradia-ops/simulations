@@ -21,7 +21,7 @@ Multivariate EEG signals are modeled as stochastic processes. When evaluating fu
 ```text
 ├── hpd_clustering_simulation.R  # Main self-contained R script
 ├── README.md                     # Documentation and usage instructions
-└── plots/                        # Generated diagnostic plots (PDF format)
+└── plots/                        # Generated diagnostic plots (PNG format)
 ```
 
 ---
@@ -59,13 +59,13 @@ Setting `N_MC_RUNS` to `2` allows you to test that the script runs end-to-end in
 
 Upon execution, the script prints summary tables of Adjusted Rand Index (ARI), Accuracy (ACC), and execution times directly to the console. It also generates the following plots inside a local `plots/` folder:
 
-* `exp1_signals.pdf`: Sample 3D EEG time series and smoothed periodograms for representative subjects.
-* `exp1_heatmaps.pdf`: Visual comparison of Euclidean vs. Riemannian pairwise distance matrices ($N \times N$).
-* `exp1_mds.pdf`: 2D Multidimensional Scaling (MDS) projection of Euclidean, LERM, and AIRM geometries.
-* `exp1_ari_barplot.pdf`: ARI score comparison for the baseline experiment.
-* `exp1_confusion_matrices.pdf`: Confusion matrices for the baseline experiment.
-* `exp2_sample_size.pdf`: Mean ARI and Accuracy curves vs. signal length $T$.
-* `exp3_dimension.pdf`: Mean ARI and Accuracy curves vs. channel count $d$.
-* `exp4_cohort.pdf`: Mean ARI and Accuracy curves vs. cohort size $N$.
-* `model_a_ari_plots.pdf` & `model_a_confusion_matrices.pdf` & `model_a_mds.pdf`: Robustness plots for Model A.
-* `model_b_ari_plots.pdf` & `model_b_confusion_matrices.pdf` & `model_b_mds.pdf`: Robustness plots for Model B.
+* `exp1_signals.png`: Sample 3D EEG time series and smoothed periodograms for representative subjects.
+* `exp1_heatmaps.png`: Visual comparison of Euclidean vs. Riemannian pairwise distance matrices ($N \times N$).
+* `exp1_mds.png`: 2D Multidimensional Scaling (MDS) projection of Euclidean, LERM, and AIRM geometries.
+* `exp1_ari_barplot.png`: ARI score comparison for the baseline experiment.
+* `exp1_confusion_matrices.png`: Confusion matrices for the baseline experiment.
+* `exp2_sample_size.png`: Mean ARI and Accuracy curves vs. signal length $T$.
+* `exp3_dimension.png`: Mean ARI and Accuracy curves vs. channel count $d$.
+* `exp4_cohort.png`: Mean ARI and Accuracy curves vs. cohort size $N$.
+* `model_a_ari_plots.png` & `model_a_confusion_matrices.png` & `model_a_mds.png`: Robustness plots for Model A.
+* `model_b_ari_plots.png` & `model_b_confusion_matrices.png` & `model_b_mds.png`: Robustness plots for Model B.

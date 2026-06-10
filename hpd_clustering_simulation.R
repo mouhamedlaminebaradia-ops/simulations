@@ -1,14 +1,6 @@
 #!/usr/bin/env Rscript
 
-# ==============================================================================
-# Part IX: Clustering of HPD Matrices Under Geometrical Constraints
-# Author: Mouhamed Lamine Bara Dia (Cleaned Version for Public Repository)
-# Description: This script simulates brain network cross-spectral density matrices
-#              under amplitude distortion (the swelling scaling trap) and compares
-#              Euclidean, Log-Euclidean (LERM), and Affine-Invariant (AIRM) metrics.
-#              It includes sample size, channel dimensionality, cohort size Monte
-#              Carlo validations, and evaluations on two curated brain state models.
-# ==============================================================================
+
 
 # ==============================================================================
 # Configuration & Dependencies
@@ -270,7 +262,7 @@ true_labels <- sapply(dataset, function(x) x$group)
 N <- length(dataset)
 
 # 1. Save Signal Plot
-pdf(file.path(plots_dir, "exp1_signals.pdf"), width = 12, height = 8)
+png(file.path(plots_dir, "exp1_signals.png"), width = 12, height = 8, units = "in", res = 150)
 par(mfrow = c(2, 2))
 ts.plot(x_sample_g1, col = 1:3, main = "Time Series: Patient 1 (Group 1)", ylab = "Amplitude")
 legend("topright", legend = c("Ch1", "Ch2", "Ch3"), col = 1:3, lty = 1, cex = 0.8)
@@ -307,7 +299,7 @@ for (i in 1:(N - 1)) {
 }
 
 # Save Heatmaps
-pdf(file.path(plots_dir, "exp1_heatmaps.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "exp1_heatmaps.png"), width = 12, height = 5, units = "in", res = 150)
 par(mfrow = c(1, 2), mar = c(2, 2, 3, 2))
 image(1:N, 1:N, dist_euclid[, N:1], col = hcl.colors(50, "Cividis", rev = TRUE), axes = FALSE,
       main = "Euclidean Distance Matrix N x N\n(No clear block structure)")
@@ -358,7 +350,7 @@ plot_conf_matrix <- function(truth, pred, title, ari) {
   }
 }
 
-pdf(file.path(plots_dir, "exp1_confusion_matrices.pdf"), width = 10, height = 4)
+png(file.path(plots_dir, "exp1_confusion_matrices.png"), width = 10, height = 4, units = "in", res = 150)
 par(mfrow = c(1, 3))
 plot_conf_matrix(true_labels, res_euclid$cluster, "Euclidean", acc_euclid)
 plot_conf_matrix(true_labels, res_lerm$cluster, "LERM", acc_lerm)
@@ -370,7 +362,7 @@ mds_euclid <- cmdscale(as.dist(dist_euclid), k = 2)
 mds_lerm <- cmdscale(as.dist(dist_lerm), k = 2)
 mds_airm <- cmdscale(as.dist(dist_airm), k = 2)
 
-pdf(file.path(plots_dir, "exp1_mds.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "exp1_mds.png"), width = 12, height = 5, units = "in", res = 150)
 par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))
 plot(mds_euclid, col = col_groupes[true_labels], pch = 19, cex = 1.5,
      main = "MDS Projection - Euclidean Space", xlab = "Dimension 1", ylab = "Dimension 2")
@@ -381,7 +373,7 @@ plot(mds_airm, col = col_groupes[true_labels], pch = 19, cex = 1.5,
 dev.off()
 
 # Save ARI Performance Barplot
-pdf(file.path(plots_dir, "exp1_ari_barplot.pdf"), width = 6, height = 5)
+png(file.path(plots_dir, "exp1_ari_barplot.png"), width = 6, height = 5, units = "in", res = 150)
 par(mfrow = c(1, 1), mar = c(5, 5, 4, 2))
 b <- barplot(c(Euclidean = acc_euclid, LERM = acc_lerm, AIRM = acc_airm),
              main = "K-Means Score (Experiment 1)", ylab = "Adjusted Rand Index (ARI)",
@@ -561,7 +553,7 @@ T_values <- c(50, 100, 200, 300, 500, 1000)
 
 mc_T <- run_monte_carlo(values = T_values, varying = "T", n_mc = N_MC_RUNS, d_fixed = 3, n_subj_fixed = 20)
 
-pdf(file.path(plots_dir, "exp2_sample_size.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "exp2_sample_size.png"), width = 12, height = 5, units = "in", res = 150)
 plot_mc_results(mc_T, xlab_title = "Sample Size (T timepoints)", main_ari = "Mean ARI vs. Signal Length", main_acc = "Mean Accuracy vs. Signal Length")
 dev.off()
 
@@ -582,7 +574,7 @@ d_values <- 3:14
 
 mc_d <- run_monte_carlo(values = d_values, varying = "d", n_mc = N_MC_RUNS, T_fixed = 300, n_subj_fixed = 20)
 
-pdf(file.path(plots_dir, "exp3_dimension.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "exp3_dimension.png"), width = 12, height = 5, units = "in", res = 150)
 plot_mc_results(mc_d, xlab_title = "Number of Channels (d)", main_ari = "Mean ARI in High Dimensions", main_acc = "Mean Accuracy in High Dimensions")
 dev.off()
 
@@ -604,7 +596,7 @@ subj_values <- c(10, 20, 30, 40, 50, 60, 80, 100)
 mc_N <- run_monte_carlo(values = subj_values, varying = "N", n_mc = N_MC_RUNS, T_fixed = 300, d_fixed = 14)
 mc_N$total_N <- subj_values * 2
 
-pdf(file.path(plots_dir, "exp4_cohort.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "exp4_cohort.png"), width = 12, height = 5, units = "in", res = 150)
 plot_mc_results(mc_N, xlab_title = "Subjects per Group", main_ari = "Mean ARI vs. Cohort Size (d = 14)", main_acc = "Mean Accuracy vs. Cohort Size (d = 14)")
 dev.off()
 
@@ -724,7 +716,7 @@ summary_a <- data.frame(
 print(knitr::kable(summary_a, digits = 3, caption = "Model A — Pure AR(2): Mean +/- SD over Monte Carlo runs"))
 
 # 1. Save Boxplot and Barplot
-pdf(file.path(plots_dir, "model_a_ari_plots.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "model_a_ari_plots.png"), width = 12, height = 5, units = "in", res = 150)
 par(mfrow = c(1, 2), mar = c(5, 5, 4, 2))
 boxplot(ari_mc_a, col = c("#e74c3c", "#f39c12", "#2ecc71"), main = "Model A — ARI Distribution", ylab = "Adjusted Rand Index (ARI)", ylim = c(-0.1, 1.15), names = c("Euclidean", "LERM", "AIRM"))
 abline(h = 1.0, lty = 2, col = "gray40", lwd = 1.5)
@@ -738,7 +730,7 @@ text(bp, means_a + sds_a + 0.07, labels = sprintf("%.3f\n+/-%.3f", means_a, sds_
 dev.off()
 
 # 2. Save Confusion Matrices
-pdf(file.path(plots_dir, "model_a_confusion_matrices.pdf"), width = 10, height = 4)
+png(file.path(plots_dir, "model_a_confusion_matrices.png"), width = 10, height = 4, units = "in", res = 150)
 par(mfrow = c(1, 3))
 plot_conf_matrix(last_run_a$TRUTH, last_run_a$PRED$eu, "Euclidean", last_run_a$ARI["Euclidean"])
 plot_conf_matrix(last_run_a$TRUTH, last_run_a$PRED$le, "LERM",      last_run_a$ARI["LERM"])
@@ -758,7 +750,7 @@ for (i in 1:(N_a - 1)) {
   }
 }
 
-pdf(file.path(plots_dir, "model_a_mds.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "model_a_mds.png"), width = 12, height = 5, units = "in", res = 150)
 par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))
 plot(cmdscale(as.dist(dist_eu_a), k=2), col=col_groupes[truth_mds_a], pch=19, cex=1.5,
      main="MDS — Euclidean (Model A)", xlab="Dim 1", ylab="Dim 2")
@@ -885,7 +877,7 @@ summary_b <- data.frame(
 print(knitr::kable(summary_b, digits = 3, caption = "Model B — Harmonic + VAR(1) Noise: Mean +/- SD over Monte Carlo runs"))
 
 # 1. Save Boxplot and Barplot
-pdf(file.path(plots_dir, "model_b_ari_plots.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "model_b_ari_plots.png"), width = 12, height = 5, units = "in", res = 150)
 par(mfrow = c(1, 2), mar = c(5, 5, 4, 2))
 boxplot(ari_mc_b, col = c("#e74c3c", "#f39c12", "#2ecc71"), main = "Model B — ARI Distribution", ylab = "Adjusted Rand Index (ARI)", ylim = c(-0.1, 1.15), names = c("Euclidean", "LERM", "AIRM"))
 abline(h = 1.0, lty = 2, col = "gray40", lwd = 1.5)
@@ -899,7 +891,7 @@ text(bp, means_b + sds_b + 0.07, labels = sprintf("%.3f\n+/-%.3f", means_b, sds_
 dev.off()
 
 # 2. Save Confusion Matrices
-pdf(file.path(plots_dir, "model_b_confusion_matrices.pdf"), width = 10, height = 4)
+png(file.path(plots_dir, "model_b_confusion_matrices.png"), width = 10, height = 4, units = "in", res = 150)
 par(mfrow = c(1, 3))
 plot_conf_matrix(last_run_b$TRUTH, last_run_b$PRED$eu, "Euclidean", last_run_b$ARI["Euclidean"])
 plot_conf_matrix(last_run_b$TRUTH, last_run_b$PRED$le, "LERM",      last_run_b$ARI["LERM"])
@@ -919,7 +911,7 @@ for (i in 1:(N_b - 1)) {
   }
 }
 
-pdf(file.path(plots_dir, "model_b_mds.pdf"), width = 12, height = 5)
+png(file.path(plots_dir, "model_b_mds.png"), width = 12, height = 5, units = "in", res = 150)
 par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))
 plot(cmdscale(as.dist(dist_eu_b), k = 2), col = col_groupes[truth_b], pch = 19, cex = 1.5,
      main = "MDS — Euclidean (Model B)", xlab = "Dim 1", ylab = "Dim 2")
