@@ -1,0 +1,9 @@
+# R history and saved workspaces
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# OS metadata
+.DS_Store
+Thumbs.db
