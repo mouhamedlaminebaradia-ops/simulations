@@ -67,5 +67,6 @@ Upon execution, the script prints summary tables of Adjusted Rand Index (ARI), A
 * `exp2_sample_size.png`: Mean ARI and Accuracy curves vs. signal length $T$.
 * `exp3_dimension.png`: Mean ARI and Accuracy curves vs. channel count $d$.
 * `exp4_cohort.png`: Mean ARI and Accuracy curves vs. cohort size $N$.
+* `time_vs_sample_size.png` & `time_vs_dimension.png` & `time_vs_cohort.png`: Clustering computation time (s) comparison vs. signal length, channel count, and cohort size.
 * `model_a_ari_plots.png` & `model_a_confusion_matrices.png` & `model_a_mds.png`: Robustness plots for Model A.
 * `model_b_ari_plots.png` & `model_b_confusion_matrices.png` & `model_b_mds.png`: Robustness plots for Model B.

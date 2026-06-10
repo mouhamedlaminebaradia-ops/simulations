@@ -312,21 +312,27 @@ abline(v = 20.5, h = 20.5, col = "white", lwd = 2, lty = 2)
 dev.off()
 
 # 3. Clustering Execution
-flat_data <- t(sapply(matrices, function(M) c(Re(as.vector(M)), Im(as.vector(M)))))
-set.seed(123)
-res_euclid <- kmeans(flat_data, centers = 2, nstart = 10)
+time_euclid <- system.time({
+  flat_data <- t(sapply(matrices, function(M) c(Re(as.vector(M)), Im(as.vector(M)))))
+  set.seed(123)
+  res_euclid <- kmeans(flat_data, centers = 2, nstart = 10)
+})["elapsed"]
 
-flat_lerm_data <- t(sapply(matrices, function(H) {
-  M <- iso_real(H)
-  e <- eigen(M, symmetric = TRUE)
-  log_M <- e$vectors %*% diag(log(pmax(e$values, 1e-12))) %*% t(e$vectors)
-  as.vector(log_M)
-}))
-set.seed(123)
-res_lerm <- kmeans(flat_lerm_data, centers = 2, nstart = 10)
+time_lerm <- system.time({
+  flat_lerm_data <- t(sapply(matrices, function(H) {
+    M <- iso_real(H)
+    e <- eigen(M, symmetric = TRUE)
+    log_M <- e$vectors %*% diag(log(pmax(e$values, 1e-12))) %*% t(e$vectors)
+    as.vector(log_M)
+  }))
+  set.seed(123)
+  res_lerm <- kmeans(flat_lerm_data, centers = 2, nstart = 10)
+})["elapsed"]
 
-set.seed(42)
-res_airm <- kmeans_riemann_hpd(matrices, k = 2)
+time_airm <- system.time({
+  set.seed(42)
+  res_airm <- kmeans_riemann_hpd(matrices, k = 2)
+})["elapsed"]
 
 acc_euclid <- adjustedRandIndex(true_labels, res_euclid$cluster)
 acc_lerm <- adjustedRandIndex(true_labels, res_lerm$cluster)
@@ -385,9 +391,11 @@ dev.off()
 # Print Table to Terminal
 comp_table <- data.frame(
   Metric = c("Euclidean", "Log-Euclidean (LERM)", "Affine-Invariant (AIRM)"),
-  ARI = c(acc_euclid, acc_lerm, acc_airm)
+  ARI = c(acc_euclid, acc_lerm, acc_airm),
+  `Time (s)` = c(time_euclid, time_lerm, time_airm),
+  check.names = FALSE
 )
-print(knitr::kable(comp_table, digits = 6, caption = "Comparison of Clustering Performance (ARI) - Experiment 1"))
+print(knitr::kable(comp_table, digits = 6, caption = "Comparison of Clustering Performance (ARI) and Computation Time (s) - Experiment 1"))
 
 # ==============================================================================
 # Monte Carlo Helper Functions
@@ -545,6 +553,25 @@ plot_mc_results <- function(mc_res, xlab_title, main_ari, main_acc) {
   legend("bottomright", legend = c("AIRM", "LERM", "Euclidean"), col = cols, lwd = 3, pch = 19)
 }
 
+# Plot MC Computation Times
+plot_time_vs_param <- function(mc_res, xlab, main, x_vals = mc_res$values) {
+  times <- mc_res$mean_time
+  cols <- c(AIRM = "#2ecc71", LERM = "#f39c12", Euclidean = "#e74c3c")
+  
+  plot(x_vals, times[, "AIRM"], type = "b", pch = 19, cex = 1.5, col = cols["AIRM"], lwd = 3,
+       ylim = c(0, max(times[, "AIRM"]) * 1.15),
+       xlab = xlab, ylab = "Computation Time (s)", main = main,
+       cex.lab = 1.2, cex.axis = 1.1, font.main = 2, frame.plot = TRUE)
+  
+  grid(col = "gray90", lty = "solid")
+  
+  lines(x_vals, times[, "LERM"], type = "b", pch = 19, cex = 1.5, col = cols["LERM"], lwd = 3)
+  lines(x_vals, times[, "Euclidean"], type = "b", pch = 19, cex = 1.5, col = cols["Euclidean"], lwd = 3)
+  
+  legend("topleft", legend = c("Affine-Invariant (AIRM)", "Log-Euclidean (LERM)", "Euclidean"),
+         col = cols[c("AIRM", "LERM", "Euclidean")], lwd = 3, pch = 19, bty = "n", cex = 1.1)
+}
+
 # ==============================================================================
 # Experiment 2: Effect of Sample Size (T)
 # ==============================================================================
@@ -555,6 +582,11 @@ mc_T <- run_monte_carlo(values = T_values, varying = "T", n_mc = N_MC_RUNS, d_fi
 
 png(file.path(plots_dir, "exp2_sample_size.png"), width = 12, height = 5, units = "in", res = 150)
 plot_mc_results(mc_T, xlab_title = "Sample Size (T timepoints)", main_ari = "Mean ARI vs. Signal Length", main_acc = "Mean Accuracy vs. Signal Length")
+dev.off()
+
+png(file.path(plots_dir, "time_vs_sample_size.png"), width = 8, height = 6, units = "in", res = 150)
+par(mar = c(5, 5, 4, 2) + 0.1)
+plot_time_vs_param(mc_T, xlab = "Signal Length (T timepoints)", main = "Clustering Computation Time vs. Signal Length")
 dev.off()
 
 time_table_T <- data.frame(
@@ -578,6 +610,11 @@ png(file.path(plots_dir, "exp3_dimension.png"), width = 12, height = 5, units = 
 plot_mc_results(mc_d, xlab_title = "Number of Channels (d)", main_ari = "Mean ARI in High Dimensions", main_acc = "Mean Accuracy in High Dimensions")
 dev.off()
 
+png(file.path(plots_dir, "time_vs_dimension.png"), width = 8, height = 6, units = "in", res = 150)
+par(mar = c(5, 5, 4, 2) + 0.1)
+plot_time_vs_param(mc_d, xlab = "Number of EEG Channels (d)", main = "Clustering Computation Time vs. Channels")
+dev.off()
+
 time_table_d <- data.frame(
   `Dimension (d)` = mc_d$values,
   Euclidean = mc_d$mean_time[, "Euclidean"],
@@ -598,6 +635,11 @@ mc_N$total_N <- subj_values * 2
 
 png(file.path(plots_dir, "exp4_cohort.png"), width = 12, height = 5, units = "in", res = 150)
 plot_mc_results(mc_N, xlab_title = "Subjects per Group", main_ari = "Mean ARI vs. Cohort Size (d = 14)", main_acc = "Mean Accuracy vs. Cohort Size (d = 14)")
+dev.off()
+
+png(file.path(plots_dir, "time_vs_cohort.png"), width = 8, height = 6, units = "in", res = 150)
+par(mar = c(5, 5, 4, 2) + 0.1)
+plot_time_vs_param(mc_N, xlab = "Cohort Size (Total Subjects 2N)", main = "Clustering Computation Time vs. Cohort Size", x_vals = mc_N$total_N)
 dev.off()
 
 time_table_N <- data.frame(
