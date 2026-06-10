@@ -191,7 +191,7 @@ kmeans_riemann_hpd <- function(hpd_list, k = 2, max_iter = 50, nstart = 1) {
 }
 
 # ==============================================================================
-# Experiment 1: Phase Separation under Swelling Scaling Traps
+# Experiment 1: Phase Separation under random global amplitude scaling factor traps
 # ==============================================================================
 message("Running Experiment 1...")
 
@@ -224,7 +224,7 @@ for (subj in 1:total_subjects) {
     x_multi[, i] <- alpha_comp + local_noise
   }
 
-  # Apply swelling scale distortion
+  # Apply random global amplitude scaling factor distortion
   subject_scale <- runif(1, 0.5, 2.0)
   for (i in 1:n_channels) {
     x_multi[, i] <- x_multi[, i] * subject_scale
@@ -435,7 +435,7 @@ run_one_simulation <- function(T_val = 300, d_val = 3, n_subj_per_group = 20, se
       x_multi[, i] <- alpha_comp + local_noise
     }
 
-    # Swelling Trap
+    # Random global amplitude scaling factor trap
     x_multi <- x_multi * runif(1, 0.5, 2.0)
 
     current_span <- max(3, floor(T_val / 20))
@@ -679,7 +679,7 @@ run_one_simulation_ar2 <- function(T_val = 300, d_val = 5, n_subj_per_group = 20
       x_multi[, c] <- arima.sim(model = list(ar = c(phi1, phi2)), n = T_val)
     }
 
-    # Swelling scale distortion
+    # Random global amplitude scaling factor distortion
     x_multi <- x_multi * runif(1, 0.5, 2.0)
 
     current_span <- max(3, floor(T_val / 20))
@@ -840,7 +840,7 @@ run_one_simulation_var <- function(T_val = 300, d_val = 5, n_subj_per_group = 20
       x_multi[, c] <- 1.5 * cos(2 * pi * 0.1 * (1:T_val) - phase_shift[c]) + W[, c]
     }
 
-    # Swelling Trap
+    # Random global amplitude scaling factor trap
     x_multi <- x_multi * runif(1, 0.5, 2.0)
 
     current_span <- max(3, floor(T_val / 20))

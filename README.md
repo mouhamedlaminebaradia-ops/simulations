@@ -2,7 +2,7 @@
 
 This repository contains the complete R implementation of numerical simulations evaluating geometric constraints in clustering complex **Hermitian Positive Definite (HPD)** matrices (e.g., cross-spectral density matrices). 
 
-In particular, it demonstrates the vulnerability of classical Euclidean distance metrics to global signal amplitude variance (the **swelling scaling trap**) and validates the robust classification capabilities of **Log-Euclidean Riemannian Metrics (LERM)** and **Affine-Invariant Riemannian Metrics (AIRM)**.
+In particular, it demonstrates the vulnerability of classical Euclidean distance metrics to global signal amplitude variance (the **random global amplitude scaling factor trap**) and validates the robust classification capabilities of **Log-Euclidean Riemannian Metrics (LERM)** and **Affine-Invariant Riemannian Metrics (AIRM)**.
 
 ## Project Description
 
