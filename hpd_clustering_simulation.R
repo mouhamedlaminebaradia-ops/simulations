@@ -11,7 +11,7 @@
 N_MC_RUNS <- 15
 
 # Automatically install missing dependencies
-required_packages <- c("astsa", "mclust", "cluster")
+required_packages <- c("astsa", "mclust", "cluster", "pdSpecEst")
 new_packages <- required_packages[!(required_packages %in% installed.packages()[, "Package"])]
 if (length(new_packages) > 0) {
   message("Installing missing packages: ", paste(new_packages, collapse = ", "))
@@ -23,6 +23,7 @@ suppressPackageStartupMessages({
   library(astsa)
   library(mclust)
   library(cluster)
+  library(pdSpecEst)
 })
 
 # Colors for plotting
@@ -338,23 +339,68 @@ acc_euclid <- adjustedRandIndex(true_labels, res_euclid$cluster)
 acc_lerm <- adjustedRandIndex(true_labels, res_lerm$cluster)
 acc_airm <- adjustedRandIndex(true_labels, res_airm$cluster)
 
-# Robust Confusion Matrix Plot Function
+# Robust Confusion Matrix Plot Function with Elegant Color Coding
 plot_conf_matrix <- function(truth, pred, title, ari) {
   tbl <- table(True = factor(truth, levels = c(1, 2)), Predicted = factor(pred, levels = c(1, 2)))
   if (tbl[1, 1] + tbl[2, 2] < tbl[1, 2] + tbl[2, 1]) {
     tbl <- tbl[, c(2, 1)]
   }
-  plot(c(-1, 2.5), c(-1, 2.5), type = "n", axes = FALSE, xlab = "", ylab = "",
-       main = sprintf("%s (ARI = %.3f)", title, ari))
-  text(x = c(0, 1), y = rep(1.5, 2), labels = c("Pred 1", "Pred 2"), font = 2)
-  text(x = rep(-0.5, 2), y = c(1, 0), labels = c("True 1", "True 2"), font = 2)
+  
+  # Set up plot window with expanded limits and xpd=TRUE to prevent text clipping
+  plot(c(-1.2, 2.2), c(-0.8, 2.2), type = "n", axes = FALSE, xlab = "", ylab = "",
+       main = sprintf("%s\n(ARI = %.3f)", title, ari), cex.main = 1.25, xpd = TRUE)
+  
+  max_val <- max(rowSums(tbl))
+  if (max_val <= 0) max_val <- 1
+  
+  # 1. Draw Cell boxes first
   for (i in 1:2) {
     for (j in 1:2) {
-      rect(j - 1.5, i - 1.5, j - 0.5, i - 0.5, col = "white", border = "gray")
-      text(j - 1, i - 1, as.character(tbl[3 - i, j]), cex = 2, col = ifelse(tbl[3 - i, j] > 0, "black", "gray80"))
+      val <- tbl[3 - i, j]
+      is_correct <- (i == 2 && j == 1) || (i == 1 && j == 2)
+      
+      if (val == 0) {
+        bg_col <- "#f8f9fa"
+      } else {
+        alpha_val <- 0.1 + 0.8 * (val / max_val)
+        if (is_correct) {
+          bg_col <- rgb(46/255, 204/255, 113/255, alpha = alpha_val)
+        } else {
+          bg_col <- rgb(231/255, 76/255, 60/255, alpha = alpha_val)
+        }
+      }
+      # Cell box
+      rect(j - 1.5, i - 1.5, j - 0.5, i - 0.5, col = bg_col, border = "#d1d5db", lwd = 2)
     }
   }
+  
+  # 2. Draw Text values second
+  for (i in 1:2) {
+    for (j in 1:2) {
+      val <- tbl[3 - i, j]
+      is_correct <- (i == 2 && j == 1) || (i == 1 && j == 2)
+      if (val == 0) {
+        text_col <- "gray80"
+      } else {
+        if (is_correct) {
+          text_col <- "#1b5e20"
+        } else {
+          text_col <- "#b71c1c"
+        }
+      }
+      # Text value
+      text(j - 1, i - 1, as.character(val), cex = 2.0, col = text_col, font = 2)
+    }
+  }
+  
+  # 3. Draw headers last (on top)
+  # Column headers (Pred 1, Pred 2)
+  text(x = c(0, 1), y = rep(1.7, 2), labels = c("Pred 1", "Pred 2"), font = 2, cex = 1.15, xpd = TRUE)
+  
+  # Row headers (True 1, True 2) - right-aligned to prevent left cropping
+  text(x = -0.65, y = c(1, 0), labels = c("True 1", "True 2"), font = 2, cex = 1.15, adj = c(1, 0.5), xpd = TRUE)
 }
+
 
 png(file.path(plots_dir, "exp1_confusion_matrices.png"), width = 10, height = 4, units = "in", res = 150)
 par(mfrow = c(1, 3))
@@ -739,11 +785,11 @@ time_mc_a <- matrix(0, N_MC_RUNS, 3, dimnames = list(NULL, c("Euclidean","LERM",
 last_run_a <- NULL
 
 for (mc in 1:N_MC_RUNS) {
-  res <- run_one_simulation_ar2(T_val = 300, d_val = 5, n_subj_per_group = 20, seed = 4000 + mc, save_mats = (mc == N_MC_RUNS))
+  res <- run_one_simulation_ar2(T_val = 300, d_val = 5, n_subj_per_group = 20, seed = 4000 + mc, save_mats = (mc == 1))
   ari_mc_a[mc, ]  <- res$ARI
   acc_mc_a[mc, ]  <- res$ACC
   time_mc_a[mc, ] <- res$TIME
-  if (mc == N_MC_RUNS) last_run_a <- res
+  if (mc == 1) last_run_a <- res
 }
 
 summary_a <- data.frame(
@@ -766,9 +812,9 @@ abline(h = 0.0, lty = 3, col = "gray70")
 
 means_a <- colMeans(ari_mc_a)
 sds_a   <- apply(ari_mc_a, 2, sd)
-bp <- barplot(means_a, col = c("#e74c3c", "#f39c12", "#2ecc71"), main = "Model A — Mean ARI with +/- 1 SD", ylab = "Mean ARI", ylim = c(0, 1.3), names.arg = c("Euclidean", "LERM", "AIRM"))
+bp <- barplot(means_a, col = c("#e74c3c", "#f39c12", "#2ecc71"), main = "Model A — Mean ARI with +/- 1 SD", ylab = "Mean ARI", ylim = c(0, 1.5), names.arg = c("Euclidean", "LERM", "AIRM"))
 arrows(bp, means_a - sds_a, bp, means_a + sds_a, angle = 90, code = 3, length = 0.08, lwd = 2)
-text(bp, means_a + sds_a + 0.07, labels = sprintf("%.3f\n+/-%.3f", means_a, sds_a), font = 2, cex = 0.95)
+text(bp, means_a + sds_a + 0.07, labels = sprintf("%.3f\n+/-%.3f", means_a, sds_a), font = 2, cex = 0.95, xpd = TRUE)
 dev.off()
 
 # 2. Save Confusion Matrices
@@ -899,11 +945,11 @@ time_mc_b <- matrix(0, N_MC_RUNS, 3, dimnames = list(NULL, c("Euclidean","LERM",
 last_run_b <- NULL
 
 for (mc in 1:N_MC_RUNS) {
-  res <- run_one_simulation_var(T_val = 300, d_val = 2, n_subj_per_group = 20, seed = 5000 + mc, save_mats = (mc == N_MC_RUNS))
+  res <- run_one_simulation_var(T_val = 300, d_val = 2, n_subj_per_group = 20, seed = 5000 + mc, save_mats = (mc == 1))
   ari_mc_b[mc, ]  <- res$ARI
   acc_mc_b[mc, ]  <- res$ACC
   time_mc_b[mc, ] <- res$TIME
-  if (mc == N_MC_RUNS) last_run_b <- res
+  if (mc == 1) last_run_b <- res
 }
 
 summary_b <- data.frame(
@@ -926,9 +972,9 @@ abline(h = 0.0, lty = 3, col = "gray70")
 
 means_b <- colMeans(ari_mc_b)
 sds_b   <- apply(ari_mc_b, 2, sd)
-bp <- barplot(means_b, col = c("#e74c3c", "#f39c12", "#2ecc71"), main = "Model B — Mean ARI with +/- 1 SD", ylab = "Mean ARI", ylim = c(0, 1.3), names.arg = c("Euclidean", "LERM", "AIRM"))
+bp <- barplot(means_b, col = c("#e74c3c", "#f39c12", "#2ecc71"), main = "Model B — Mean ARI with +/- 1 SD", ylab = "Mean ARI", ylim = c(0, 1.5), names.arg = c("Euclidean", "LERM", "AIRM"))
 arrows(bp, means_b - sds_b, bp, means_b + sds_b, angle = 90, code = 3, length = 0.08, lwd = 2)
-text(bp, means_b + sds_b + 0.07, labels = sprintf("%.3f\n+/-%.3f", means_b, sds_b), font = 2, cex = 0.95)
+text(bp, means_b + sds_b + 0.07, labels = sprintf("%.3f\n+/-%.3f", means_b, sds_b), font = 2, cex = 0.95, xpd = TRUE)
 dev.off()
 
 # 2. Save Confusion Matrices

@@ -70,3 +70,50 @@ Upon execution, the script prints summary tables of Adjusted Rand Index (ARI), A
 * `time_vs_sample_size.png` & `time_vs_dimension.png` & `time_vs_cohort.png`: Clustering computation time (s) comparison vs. signal length, channel count, and cohort size.
 * `model_a_ari_plots.png` & `model_a_confusion_matrices.png` & `model_a_mds.png`: Robustness plots for Model A.
 * `model_b_ari_plots.png` & `model_b_confusion_matrices.png` & `model_b_mds.png`: Robustness plots for Model B.
+
+---
+
+## Visual Results & Simulation Diagnosis
+
+Here are the key diagnostic visualizations produced by the simulation suite.
+
+### 1. Model B: Harmonic Signal + Spatiotemporally Correlated VAR(2) Noise
+Under a challenging scaling factor of **0.37**, this experiment evaluates the performance of Euclidean vs. Log-Euclidean (LERM) and Affine-Invariant (AIRM) Riemannian metrics.
+
+#### ARI Performance (Boxplot & Barplot)
+The Log-Euclidean (LERM) and Affine-Invariant (AIRM) Riemannian metrics remain highly robust (Mean ARI $\approx 0.934$ and $0.864$), while the Euclidean metric fails (Mean ARI $\approx 0.287$).
+![Model B ARI Performance](plots/model_b_ari_plots.png)
+
+#### Confusion Matrices (Representative Run)
+A representative successful run (Run 1) displays the perfect separation obtained by the Riemannian metrics in contrast to the high error rate of the Euclidean metric.
+![Model B Confusion Matrices](plots/model_b_confusion_matrices.png)
+
+#### 2D Manifold Visualization (MDS)
+The multidimensional scaling projection illustrates the clean, distinct clusters captured by LERM and AIRM, whereas the Euclidean space shows massive overlap due to the random global amplitude scaling factor trap.
+![Model B MDS Projection](plots/model_b_mds.png)
+
+### 2. Model A: Pure Autoregressive AR(2) Process (Alpha vs. Beta Rhythm)
+This simulation evaluates state classification under varying alpha/beta rhythmic components with scaling distortions.
+
+#### ARI Performance
+![Model A ARI Performance](plots/model_a_ari_plots.png)
+
+#### Confusion Matrices
+![Model A Confusion Matrices](plots/model_a_confusion_matrices.png)
+
+#### 2D Manifold Visualization (MDS)
+![Model A MDS Projection](plots/model_a_mds.png)
+
+### 3. Experiment 1: Baseline Phase Separation under Scaling Distortions
+This experiment demonstrates the fundamental geometric vulnerability of the Euclidean distance to signal amplitude variations.
+
+#### Pairwise Distance Heatmaps ($N \times N$)
+While the Euclidean distance matrix is dominated by scaling differences and shows no block structure, the Riemannian distance matrix naturally highlights the intra-group phase topology.
+![Experiment 1 Distance Heatmaps](plots/exp1_heatmaps.png)
+
+#### 2D Manifold Visualization (MDS)
+![Experiment 1 MDS Projection](plots/exp1_mds.png)
+
+#### Confusion Matrices
+![Experiment 1 Confusion Matrices](plots/exp1_confusion_matrices.png)
+
