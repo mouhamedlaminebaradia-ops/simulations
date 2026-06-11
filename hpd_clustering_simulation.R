@@ -808,16 +808,19 @@ dev.off()
 # ==============================================================================
 message("\nRunning Robustness Study: Model B (VAR(1) Spatiotemporal Noise)...")
 
-run_one_simulation_var <- function(T_val = 300, d_val = 5, n_subj_per_group = 20, phi_ar = 0.5, rho_spatial = 0.5, seed = NULL, save_mats = FALSE) {
+run_one_simulation_var <- function(T_val = 300, d_val = 2, n_subj_per_group = 20, seed = NULL, save_mats = FALSE) {
   if (!is.null(seed)) set.seed(seed)
-  stopifnot(abs(phi_ar) < 1)
 
   total_subj <- 2 * n_subj_per_group
   mats  <- list()
   truth <- rep(1:2, each = n_subj_per_group)
 
-  Sigma      <- outer(1:d_val, 1:d_val, function(i, j) rho_spatial^abs(i - j))
-  Sigma_chol <- chol(Sigma)
+  # Bivariate VAR(2) parameters
+  Phi1 <- matrix(c(1.2, 0.2, 0.2, 1.2), nrow = 2)
+  Phi2 <- matrix(c(-0.8, 0.0, 0.0, -0.8), nrow = 2)
+  ar_coef <- array(c(Phi1, Phi2), dim = c(2, 2, 2))
+  ma_coef <- array(0, dim = c(2, 2, 2))
+  noise_cov <- matrix(c(1.0, 0.5, 0.5, 1.0), nrow = 2)
 
   for (subj in 1:total_subj) {
     if (truth[subj] == 1) {
@@ -826,15 +829,11 @@ run_one_simulation_var <- function(T_val = 300, d_val = 5, n_subj_per_group = 20
       phase_shift <- seq(0, -pi, length.out = d_val)
     }
 
-    # VAR(1) generation
-    W <- matrix(0, nrow = T_val, ncol = d_val)
-    for (t in 2:T_val) {
-      z_t    <- rnorm(d_val)
-      E_t    <- as.numeric(t(Sigma_chol) %*% z_t)
-      W[t, ] <- phi_ar * W[t - 1, ] + E_t
-    }
+    # Simulate VAR(2) noise using rARMA
+    sim_rez <- rARMA(n = T_val, d = d_val, Phi = ar_coef, Theta = ma_coef, Sigma = noise_cov)
+    W <- sim_rez$X
 
-    # Signal = harmonic + VAR(1) noise
+    # Signal = harmonic + VAR(2) noise
     x_multi <- matrix(0, nrow = T_val, ncol = d_val)
     for (c in 1:d_val) {
       x_multi[, c] <- 1.5 * cos(2 * pi * 0.1 * (1:T_val) - phase_shift[c]) + W[, c]
@@ -900,7 +899,7 @@ time_mc_b <- matrix(0, N_MC_RUNS, 3, dimnames = list(NULL, c("Euclidean","LERM",
 last_run_b <- NULL
 
 for (mc in 1:N_MC_RUNS) {
-  res <- run_one_simulation_var(T_val = 300, d_val = 5, n_subj_per_group = 20, phi_ar = 0.5, rho_spatial = 0.5, seed = 5000 + mc, save_mats = (mc == N_MC_RUNS))
+  res <- run_one_simulation_var(T_val = 300, d_val = 2, n_subj_per_group = 20, seed = 5000 + mc, save_mats = (mc == N_MC_RUNS))
   ari_mc_b[mc, ]  <- res$ARI
   acc_mc_b[mc, ]  <- res$ACC
   time_mc_b[mc, ] <- res$TIME
