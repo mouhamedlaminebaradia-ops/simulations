@@ -824,14 +824,14 @@ run_one_simulation_var <- function(T_val = 300, d_val = 2, n_subj_per_group = 20
 
   for (subj in 1:total_subj) {
     if (truth[subj] == 1) {
-      phase_shift <- seq(0,  pi, length.out = d_val)
+      phase_shift <- seq(0,  pi/2, length.out = d_val)
     } else {
-      phase_shift <- seq(0, -pi, length.out = d_val)
+      phase_shift <- seq(0, -pi/2, length.out = d_val)
     }
 
     # Simulate VAR(2) noise using rARMA
     sim_rez <- rARMA(n = T_val, d = d_val, Phi = ar_coef, Theta = ma_coef, Sigma = noise_cov)
-    W <- sim_rez$X
+    W <- sim_rez$X * 0.15  # Scaled to maintain realistic SNR
 
     # Signal = harmonic + VAR(2) noise
     x_multi <- matrix(0, nrow = T_val, ncol = d_val)
