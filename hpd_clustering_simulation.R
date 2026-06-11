@@ -806,7 +806,7 @@ dev.off()
 # ==============================================================================
 # Model B: Spatially and Temporally Correlated Noise Simulation
 # ==============================================================================
-message("\nRunning Robustness Study: Model B (VAR(1) Spatiotemporal Noise)...")
+message("\nRunning Robustness Study: Model B (bivariate VAR(2) Spatiotemporal Noise)...")
 
 run_one_simulation_var <- function(T_val = 300, d_val = 2, n_subj_per_group = 20, seed = NULL, save_mats = FALSE) {
   if (!is.null(seed)) set.seed(seed)
@@ -915,7 +915,7 @@ summary_b <- data.frame(
   `Mean Time (s)` = colMeans(time_mc_b),
   check.names = FALSE
 )
-print(knitr::kable(summary_b, digits = 3, caption = "Model B — Harmonic + VAR(1) Noise: Mean +/- SD over Monte Carlo runs"))
+print(knitr::kable(summary_b, digits = 3, caption = "Model B — Harmonic + Bivariate VAR(2) Noise: Mean +/- SD over Monte Carlo runs"))
 
 # 1. Save Boxplot and Barplot
 png(file.path(plots_dir, "model_b_ari_plots.png"), width = 12, height = 5, units = "in", res = 150)

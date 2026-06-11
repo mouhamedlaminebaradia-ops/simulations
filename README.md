@@ -12,7 +12,7 @@ Multivariate EEG signals are modeled as stochastic processes. When evaluating fu
 3. **Experiment 3 (High Dimensionality)**: Scaling behavior as channel count ($d$) increases.
 4. **Experiment 4 (Cohort Size)**: Impact of total subject count ($N$).
 5. **Model A (Stochastic Brain State)**: Pure AR(2) process simulation (alpha vs. beta rhythm).
-6. **Model B (Spatiotemporally Correlated Noise)**: Harmonic signal in VAR(1) correlated noise.
+6. **Model B (Spatiotemporally Correlated Noise)**: Harmonic signal in bivariate VAR(2) correlated noise.
 
 ---
 
